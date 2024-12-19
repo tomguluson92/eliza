@@ -8,8 +8,31 @@ import {
     State,
 } from "@ai16z/eliza";
 import { generateWebSearch } from "@ai16z/eliza";
-
 import { SearchResult } from "@ai16z/eliza";
+import { encodingForModel, TiktokenModel } from "js-tiktoken";
+
+const DEFAULT_MAX_TOKENS = 4000;
+const DEFAULT_MODEL_ENCODING = "gpt-3.5-turbo";
+
+function getTotalTokensFromString(
+    str: string,
+    encodingName: TiktokenModel = DEFAULT_MODEL_ENCODING
+  ) {
+    const encoding = encodingForModel(encodingName);
+    return encoding.encode(str).length;
+  }
+
+// To avoid output too much tokens.
+function MaxTokens(
+    data: string,
+    maxTokens: number = DEFAULT_MAX_TOKENS
+  ): string {
+    
+    if (getTotalTokensFromString(data) >= maxTokens) {
+        return data.slice(0, maxTokens);
+    }
+    return data;
+  }
 
 const webSearch: Action = {
     name: "WEB_SEARCH",
@@ -68,7 +91,7 @@ const webSearch: Action = {
                 : "";
 
             callback({
-                text: responseList,
+                text: console.log(MaxTokens(responseList, DEFAULT_MAX_TOKENS)),
             });
         } else {
             elizaLogger.error("search failed or returned no data.");
